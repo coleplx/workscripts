@@ -1,0 +1,19 @@
+#!/bin/bash
+# psphp
+# Filtra os sites que estão esgotando os recursos do PHP no cloud
+
+LOGS=$(ls -1 /var/log/php*.log)
+
+for i in $LOGS; do
+    VERSAO=$(echo $i | egrep -o [0-9].[0-9]+)
+    ALERTAS=$(cat $i  | grep "server reached pm.max" | wc -l)
+    if [[ $ALERTAS -ne "0" ]]; then
+        echo "Há $ALERTAS alertas de exaustão de recursos para o PHP $VERSAO"
+        if [[ $ALERTAS -lt 10 ]]; then
+                echo "Os últimos $ALERTAS alertas dessa versão são os seguintes:"
+        else
+                echo "Os últimos 10 alertas dessa versão são os seguintes:"
+        fi
+        cat $i | grep "server reached pm.max" | tail -n 10
+    fi
+done
