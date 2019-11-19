@@ -8,9 +8,9 @@ for i in $(find /usr/bin/ -type l -iname lsphp*); do
         wget https://pecl.php.net/get/timezonedb-2019.3.tgz -O /usr/local/src/timezonedb.tgz
         tar -xf /usr/local/src/timezonedb.tgz -C /usr/local/src/
         cd /usr/local/src/timezonedb-2019.3/; /usr/local/lsws/lsphp56/bin/phpize
+        ./configure --with-php-config=/usr/local/lsws/lsphp56/bin/php-config
         make
         make install
-        ./configure --with-php-config=/usr/local/lsws/lsphp56/bin/php-config
     else
         DEBIAN_FRONTEND=noninteractive apt-get install -q -y $VERSAO-pear $VERSAO-dev
         /usr/local/lsws/$VERSAO/bin/pecl install timezonedb
