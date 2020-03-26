@@ -14,8 +14,9 @@ for i in $PHP_VERSION; do
     extension_dir=$(/usr/sbin/$i -i | egrep ^extension_dir | cut -d' ' -f3)
     cp $ION_DIR/ioncube_loader_lin_${php_version}.so $extension_dir/
     chmod 644 $extension_dir/ioncube_loader_lin_${php_version}.so
-    echo "zend_extension = ioncube_loader_lin_${php_version}.so" > /etc/php/${php_version}/mods-available/ioncube.ini
-    ln -s /etc/php/${php_version}/mods-available/ioncube.ini /etc/php/${php_version}/fpm/conf.d/01-ioncube.ini
+    echo "zend_extension = ioncube_loader_lin_${php_version}.so
+; priority =1" > /etc/php/${php_version}/mods-available/ioncube.ini
+    phpenmod -v ${php_version} ioncube
 done
 
 # interno
