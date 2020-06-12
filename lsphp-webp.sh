@@ -39,7 +39,7 @@ ldconfig /usr/local/lib
 cd /usr/local/src/
 /usr/local/lsws/lsphp${PHP_SHORT_VERSION}/bin/pecl download imagick
 tar -xf imagick-*.tgz
-cd imagick-*
+cd $(ls -1t | grep imagick | head -n1)
 /usr/local/lsws/lsphp${PHP_SHORT_VERSION}/bin/phpize
 ./configure --with-php-config=/usr/local/lsws/lsphp${PHP_SHORT_VERSION}/bin/php-config
 make
