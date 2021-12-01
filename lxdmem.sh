@@ -29,7 +29,7 @@ ARC_SIZE=$(arc_summary -s arc | grep 'Max size' | awk '{print $6 " " $7}')
 # Linux Used Memory
 MEMCACHED=$(cat /proc/meminfo | grep ^Cached: | awk '{print $2 / 1024 / 1024}')
 MEMBUFFER=$(cat /proc/meminfo | grep ^Buffers: | awk '{print $2 / 1024 / 1024}')
-MEMUSED=$(echo $MEMTOTAL $MEMFREE $MEMBUFFER $MEMCACHED | awk '{print $1 - $2 - $3 - $4 }')
+MEMUSED=$(free -k | grep Mem: | awk '{print $3 / 1024 /1024}')
 
 
 # Sum all known memory usage
