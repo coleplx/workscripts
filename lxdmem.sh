@@ -19,7 +19,8 @@ else
 fi
 CONTAINERS_USAGE=$(lxc list --format=json | jq  '.[] | "\(.name) \(.status) \(.state.memory.usage)"' | tr -d "\"" | grep -v Stopped | cut -d' ' -f3 | awk '{s+=$1} END {print s / 1024 / 1024 / 1024}')
 CONTAINER_TOP_MEM_USAGE=$(lxc list --format=json | jq  '.[] | "\(.name) \(.status) \(.state.memory.usage)"' | tr -d "\"" | grep -v Stopped | awk '{print $3 " " $0}' | sort -r | head -n5 | awk '{print $2 " " $4 / 1024 / 1024 / 1024}')
-LXD_USERS_MEM_USAGE=$(ps -eo size,pid,user,command --sort -size | egrep "root|daemon|lxd|message|syslog|systemd" | awk '{ hr=$1/1024 ; printf("%13.2f Mb ",hr) } { for ( x=4 ; x<=NF ; x++ ) { printf("%s ",$x) } print "" }' |    cut -d "" -f2 | cut -d "-" -f1  | head  -n 20 | awk '{print $1}' | awk '{s+=$1} END {print s / 1024}')
+LXD_USERS="$(for i in $(ps aux | cut -d ' ' -f1 | tail -n +2 | sort | uniq | egrep -v "^[0-9]"); do printf "$i|"; done)"
+LXD_USERS_MEM_USAGE=$(ps -eo size,pid,user,command --sort -size | egrep "$LXD_USERS" | awk '{ hr=$1/1024 ; printf("%13.2f Mb ",hr) } { for ( x=4 ; x<=NF ; x++ ) { printf("%s ",$x) } print "" }' |    cut -d "" -f2 | cut -d "-" -f1  | head  -n 20 | awk '{print $1}' | awk '{s+=$1} END {print s / 1024}')
 
 
 # Max memory limits
