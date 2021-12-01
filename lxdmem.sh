@@ -27,13 +27,12 @@ MEMTOTAL=$(cat /proc/meminfo | grep MemTotal | awk '{print $2 / 1024 / 1024}')
 ARC_SIZE=$(arc_summary -s arc | grep 'Max size' | awk '{print $6 " " $7}')
 
 # Linux Used Memory
-MEMCACHED=$(cat /proc/meminfo | grep ^Cached: | awk '{print $2 / 1024 / 1024}')
-MEMBUFFER=$(cat /proc/meminfo | grep ^Buffers: | awk '{print $2 / 1024 / 1024}')
+MEMBUFCACHE=$(free -k | grep Mem: | awk '{print $6 / 1024 / 1024}')
 MEMUSED=$(free -k | grep Mem: | awk '{print $3 / 1024 /1024}')
 
 
 # Sum all known memory usage
-TOTAL_KNOWN_MEMORY_USAGE=$(echo $ARC_USAGE $CONTAINERS_USAGE $LXD_USERS_MEM_USAGE $MEMBUFFER $MEMCACHED | awk '{print $1 + $2 + $3 + $4}')
+TOTAL_KNOWN_MEMORY_USAGE=$(echo $ARC_USAGE $CONTAINERS_USAGE $LXD_USERS_MEM_USAGE $MEMBUFCACHE | awk '{print $1 + $2 + $3 + $4}')
 
 echo ""
 echo "------ System Info ------ "
@@ -46,8 +45,7 @@ echo "------ Details ------ "
 echo "ARC Memory Usage:         $ARC_USAGE GiB"
 echo "Containers Memory Usage:  $CONTAINERS_USAGE GiB"
 echo "OS Users Memory Usage:    $LXD_USERS_MEM_USAGE GiB"
-echo "OS Buffers:               $MEMBUFFER GiB"
-echo "OS Caches:                $MEMCACHED GiB"
+echo "OS Buffers/Caches:        $MEMBUFCACHE GiB"
 echo "                         ---------------------"
 echo "Total Known Memory Usage (Caches included): $TOTAL_KNOWN_MEMORY_USAGE GiB"
 echo ""
