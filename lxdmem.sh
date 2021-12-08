@@ -40,7 +40,8 @@ RUNNING_PC=$(ps ax --no-headers -o "rss,cmd")
 MYSQL_MEM="0"
 NGINX_MEM="0"
 REDIS_MEM="0"
-PHP_MEM="0"
+PHPFPM_MEM="0"
+PHPCLI_MEM="0"
 FILEBEAT_MEM="0"
 if [ -n "$(echo "$RUNNING_PC" | egrep -o 'mariadb|mysql')" ]; then
   MYSQL_MEM=$(echo "$RUNNING_PC" | egrep "mariadb|mysql" | awk '{sum+=$1;}END{print sum/1024/1024;}')
@@ -52,10 +53,13 @@ if [ -n "$(echo "$RUNNING_PC" | egrep -o 'redis-server')" ]; then
   REDIS_MEM=$(echo "$RUNNING_PC" | grep redis-server | awk '{sum+=$1;}END{print sum/1024/1024;}')
 fi
 if [ -n "$(echo "$RUNNING_PC" | egrep -o 'php-fpm')" ]; then
-  PHP_MEM=$(echo "$RUNNING_PC" | grep php-fpm | awk '{sum+=$1;}END{print sum/1024/1024;}')
+  PHPFPM_MEM=$(echo "$RUNNING_PC" | grep php-fpm | awk '{sum+=$1;}END{print sum/1024/1024;}')
 fi
 if [ -n "$(echo "$RUNNING_PC" | egrep -o 'filebeat')" ]; then
   FILEBEAT_MEM=$(echo "$RUNNING_PC" | grep filebeat | awk '{sum+=$1;}END{print sum/1024/1024;}')
+fi
+if [ -n "$(echo "$RUNNING_PC" | egrep -o 'php ')" ]; then
+  PHPCLI_MEM=$(echo "$RUNNING_PC" | grep 'php ' | awk '{sum+=$1;}END{print sum/1024/1024;}')
 fi
 
 # Sum all known memory usage
@@ -78,7 +82,8 @@ echo "OS Page Cache:                                       $MEMCACHED GiB"
 echo "Slabs (In-kernel data structures cache):             $MEMSLAB GiB"
 echo ""
 echo "------ Memory Usage per Common Process (All containers) ------"
-echo "PHP:      $PHP_MEM GiB"
+echo "PHP:      $PHPFPM_MEM GiB"
+echo "PHP CLI:  $PHPCLI_MEM GiB"
 echo "MySQL:    $MYSQL_MEM GiB"
 echo "NGINX:    $NGINX_MEM GiB"
 echo "Filebeat: $FILEBEAT_MEM GiB"
