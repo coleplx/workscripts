@@ -3,16 +3,23 @@
 #
 # Paulo H. Paracatu - paulo {at} cole.tec.br
 
+# Get system stats only once
 MEMINFO=$(cat /proc/meminfo)
+ARC_SUMMARY=$(arc_summary -s arc)
+ARC_HITS=$(arc_summary -s archits)
+OS_USERS=$(for i in $(cat /etc/passwd | cut -d':' -f1); do echo $i; done | sed -e ':a;N;$!ba;s/\n/|/g')
+# This is 15~25x faster than "lxc list --fast | grep RUNNING"
+RUNNING_CONTAINERS=$(ps aux | grep 'lxc monito[r]' | rev | cut -d' ' -f1 | rev)
+MEMORY_PER_CONTAINER=$(for container in $RUNNING_CONTAINERS; do  MEM_IN_BYTES=$(cat /sys/fs/cgroup/memory/lxc.payload.${container}/memory.usage_in_bytes); echo $MEM_IN_BYTES $container; done)
 
 # Available memory
 MEMFREE=$(echo "$MEMINFO" | grep MemFree | awk '{print $2 / 1024 / 1024}')
 MEMAVAILABLE=$(echo "$MEMINFO" | grep MemAvailable | awk '{print $2 / 1024 / 1024}')
 
 # Memory usage at the moment
-ARC_USAGE=$(arc_summary -s arc | grep '^ARC size' | awk '{print $6 " " $7}')
-ARC_MAXSIZE=$(arc_summary -s arc | grep 'Max size (high water):' | awk '{print $6 " " $7}')
-ARC_HIT=$(arc_summary  | grep 'Actual hit ratio' | awk '{print $8 $9 }')
+ARC_USAGE=$(echo "$ARC_SUMMARY" | grep '^ARC size' | awk '{print $6 " " $7}')
+ARC_MAXSIZE=$(echo "$ARC_SUMMARY" | grep 'Max size (high water):' | awk '{print $6 " " $7}')
+ARC_HIT=$(echo "$ARC_HITS"  | grep 'Actual hit ratio' | awk '{print $8 $9 }')
 if [ "$(echo $ARC_USAGE | grep -o GiB)" == "GiB" ]; then
   ARC_USAGE=$(echo $ARC_USAGE | cut -d' ' -f1)
 elif [ "$(echo $ARC_USAGE | grep -o MiB)" == "MiB" ]; then
@@ -21,14 +28,13 @@ else
   # Not worth to calculate if less than 1 MiB, really...
   ARC_USAGE=0
 fi
-CONTAINERS_USAGE=$(lxc list --format=json | jq  '.[] | "\(.name) \(.status) \(.state.memory.usage)"' | tr -d "\"" | grep -v Stopped | cut -d' ' -f3 | awk '{s+=$1} END {print s / 1024 / 1024 / 1024}')
-CONTAINER_TOP_MEM_USAGE=$(lxc list --format=json | jq  '.[] | "\(.name) \(.status) \(.state.memory.usage)"' | tr -d "\"" | grep -v Stopped | awk '{print $3 " " $0}' | sort -rn | head -n5 | awk '{print $2 " " $4 / 1024 / 1024 / 1024}')
-LXD_USERS_MEM_USAGE=$(for i in $(cat /etc/passwd | cut -d':' -f1); do ps -o size,pid,user,command --sort -size -u $i | awk '{ hr=$1/1024 ; printf("%13.2f Mb ",hr) } { for ( x=4 ; x<=NF ; x++ ) { printf("%s ",$x) } print "" }' |    cut -d "" -f2 | cut -d "-" -f1  | head  -n 20 | awk '{print $1}' | awk '{s+=$1} END {print s / 1024}'; done | awk '{s+=$1} END {print s}')
-
+CONTAINERS_USAGE=$(echo "$MEMORY_PER_CONTAINER" | awk '{s+=$1} END {print s / 1024 / 1024 / 1024}')
+CONTAINER_TOP_MEM_USAGE=$(echo "$MEMORY_PER_CONTAINER" | sort -nr | head -n5 | awk '{print $2 " " $1 / 1024 / 1024 /1024 " GiB"}')
+LXD_USERS_MEM_USAGE=$(ps -axo size,pid,user,command --sort -size | awk '{print $3 " " $0}' | egrep "^($OS_USERS)" | awk '{ hr=$2/1024 ; printf("%13.2f Mb ",hr) } { for ( x=4 ; x<=NF ; x++ ) { printf("%s ",$x) } print "" }' |    cut -d "" -f2 | cut -d "-" -f1  | head  -n 20 | awk '{print $1}' | awk '{s+=$1} END {print s / 1024}' | awk '{s+=$1} END {print s}')
 
 # Max memory limits
 MEMTOTAL=$(echo "$MEMINFO" | grep MemTotal | awk '{print $2 / 1024 / 1024}')
-ARC_SIZE=$(arc_summary -s arc | grep 'Max size' | awk '{print $6 " " $7}')
+ARC_SIZE=$(echo "$ARC_SUMMARY" | grep 'Max size' | awk '{print $6 " " $7}')
 
 # Linux Used Memory
 MEMCACHED=$(echo "$MEMINFO" | grep ^Cached: | awk '{print $2 / 1024 / 1024}')
