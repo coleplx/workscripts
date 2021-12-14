@@ -5,10 +5,13 @@
 
 # Get system stats only once
 MEMINFO=$(cat /proc/meminfo)
-ARC_SUMMARY=$(arc_summary -s arc)
-ARC_HITS=$(arc_summary -s archits)
+ARC_INFO=$(cat /proc/spl/kstat/zfs/arcstats)
+ARC_HITS=$(echo "$ARC_INFO" | egrep ^hits | awk '{print $3}')
+ARC_MISSES=$(echo "$ARC_INFO" | egrep ^misses | awk '{print $3}')
+ARC_HITRATIO=$(echo $ARC_HITS $ARC_MISSES | awk '{print $1 / ($1+$2) * 100}')
 OS_USERS=$(for i in $(cat /etc/passwd | cut -d':' -f1); do echo $i; done | sed -e ':a;N;$!ba;s/\n/|/g')
 LOAD_AVG=$(uptime  | egrep -o "load average.*" | awk '{print $3 " " $4 " " $5}')
+
 # This is 15~25x faster than "lxc list --fast | grep RUNNING"
 RUNNING_CONTAINERS=$(ps aux | grep 'lxc monito[r]' | rev | cut -d' ' -f1 | rev)
 SUM_RUNNING_CONTAINERS=$(echo "$RUNNING_CONTAINERS" | wc -l)
@@ -19,24 +22,14 @@ MEMFREE=$(echo "$MEMINFO" | grep MemFree | awk '{print $2 / 1024 / 1024}')
 MEMAVAILABLE=$(echo "$MEMINFO" | grep MemAvailable | awk '{print $2 / 1024 / 1024}')
 
 # Memory usage at the moment
-ARC_USAGE=$(echo "$ARC_SUMMARY" | grep '^ARC size' | awk '{print $6 " " $7}')
-ARC_MAXSIZE=$(echo "$ARC_SUMMARY" | grep 'Max size (high water):' | awk '{print $6 " " $7}')
-ARC_HIT=$(echo "$ARC_HITS"  | grep 'Actual hit ratio' | awk '{print $8 $9 }')
-if [ "$(echo $ARC_USAGE | grep -o GiB)" == "GiB" ]; then
-  ARC_USAGE=$(echo $ARC_USAGE | cut -d' ' -f1)
-elif [ "$(echo $ARC_USAGE | grep -o MiB)" == "MiB" ]; then
-  ARC_USAGE=$(echo $ARC_USAGE | cut -d' ' -f1 | awk '{print $1 / 1024}')
-else
-  # Not worth to calculate if less than 1 MiB, really...
-  ARC_USAGE=0
-fi
+ARC_USAGE=$(echo "$ARC_INFO" | grep ^size | awk '{print $3 / 1024 / 1024 / 1024 " GiB"}')
+ARC_MAXSIZE=$(echo "$ARC_INFO" | grep ^c_max | awk '{print $3 / 1024 / 1024 / 1024 " GiB"}')
 CONTAINERS_USAGE=$(echo "$MEMORY_PER_CONTAINER" | awk '{s+=$1} END {print s / 1024 / 1024 / 1024}')
 CONTAINER_TOP_MEM_USAGE=$(echo "$MEMORY_PER_CONTAINER" | sort -nr | head -n5 | awk '{print $2 " " $1 / 1024 / 1024 /1024 " GiB"}')
 LXD_USERS_MEM_USAGE=$(ps -axo size,pid,user,command --sort -size | awk '{print $3 " " $0}' | egrep "^($OS_USERS)" | awk '{ hr=$2/1024 ; printf("%13.2f Mb ",hr) } { for ( x=4 ; x<=NF ; x++ ) { printf("%s ",$x) } print "" }' |    cut -d "" -f2 | cut -d "-" -f1  | head  -n 20 | awk '{print $1}' | awk '{s+=$1} END {print s / 1024}' | awk '{s+=$1} END {print s}')
 
 # Max memory limits
 MEMTOTAL=$(echo "$MEMINFO" | grep MemTotal | awk '{print $2 / 1024 / 1024}')
-ARC_SIZE=$(echo "$ARC_SUMMARY" | grep 'Max size' | awk '{print $6 " " $7}')
 
 # Linux Used Memory
 MEMCACHED=$(echo "$MEMINFO" | grep ^Cached: | awk '{print $2 / 1024 / 1024}')
@@ -85,8 +78,8 @@ echo "Available memory:         $MEMAVAILABLE GiB"
 echo "Total Known Memory Usage: $TOTAL_KNOWN_MEMORY_USAGE GiB"
 echo ""
 echo "------ Details ------"
-echo "ARC Memory Usage:                                    $ARC_USAGE GiB ($ARC_MAXSIZE MAX)"
-echo "ARC Cache Efficiency:                                $ARC_HIT"
+echo "ARC Memory Usage:                                    $ARC_USAGE ($ARC_MAXSIZE MAX)"
+echo "ARC Cache Efficiency:                                $ARC_HITRATIO"
 echo "Containers Memory Usage:                             $CONTAINERS_USAGE GiB"
 echo "OS Users Memory Usage:                               $LXD_USERS_MEM_USAGE GiB"
 echo "OS Buffers (temporary storage for raw disk blocks):  $MEMBUFFER GiB"
