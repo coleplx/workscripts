@@ -8,8 +8,10 @@ MEMINFO=$(cat /proc/meminfo)
 ARC_SUMMARY=$(arc_summary -s arc)
 ARC_HITS=$(arc_summary -s archits)
 OS_USERS=$(for i in $(cat /etc/passwd | cut -d':' -f1); do echo $i; done | sed -e ':a;N;$!ba;s/\n/|/g')
+LOAD_AVG=$(uptime  | egrep -o "load average.*" | awk '{print $3 " " $4 " " $5}')
 # This is 15~25x faster than "lxc list --fast | grep RUNNING"
 RUNNING_CONTAINERS=$(ps aux | grep 'lxc monito[r]' | rev | cut -d' ' -f1 | rev)
+SUM_RUNNING_CONTAINERS=$(echo "$RUNNING_CONTAINERS" | wc -l)
 MEMORY_PER_CONTAINER=$(for container in $RUNNING_CONTAINERS; do  MEM_IN_BYTES=$(cat /sys/fs/cgroup/memory/lxc.payload.${container}/memory.usage_in_bytes); echo $MEM_IN_BYTES $container; done)
 
 # Available memory
@@ -73,6 +75,10 @@ TOTAL_KNOWN_MEMORY_USAGE=$(echo $ARC_USAGE $CONTAINERS_USAGE $LXD_USERS_MEM_USAG
 
 echo ""
 echo "------ System Info ------"
+echo "Running containers: $SUM_RUNNING_CONTAINERS"
+echo "Load Average:       $LOAD_AVG"
+echo ""
+echo "------ Memory Info ------"
 echo "Total memory:             $MEMTOTAL GiB"
 echo "Free memory:              $MEMFREE GiB"
 echo "Available memory:         $MEMAVAILABLE GiB"
