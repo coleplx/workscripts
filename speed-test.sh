@@ -80,7 +80,6 @@ worker_count=0
 
 if [ "$OUTPUT_FORMAT" == "pretty" ]; then
   echo "- Test type: $TEST_TYPE"
-  echo "- URLs: $SITE_LIST"
 fi
 for url in $(echo "$SITE_LIST"); do
   # egrep workaround to remove special characters (tab, newline, etc)
