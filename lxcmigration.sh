@@ -5,6 +5,7 @@
 # v0.3 - Drop zfs list in favor of /kinsta/main.conf
 # v0.4 - Use readarray to avoid "column: line too long" error
 # v1.0 - Check staging disk usage too, exclude site if staging usage is bigger than 7 GiB
+# v1.1 - Set disk = 0 when variable is empty
 #
 RUNNING_CONTAINERS=$(ps aux | grep 'lxc monito[r]' | rev | cut -d' ' -f1 | rev)
 
@@ -16,12 +17,14 @@ cont_list=$(for container in $(echo "$RUNNING_CONTAINERS" | grep -v '\-staging\-
   if [ $? == 0 ]; then
     STAGING_RUNNING=1
     STAGING_DISK=$(lxc exec $STAGING_NAME -- cat /kinsta/main.conf | grep ^disk_usage_full | cut -d'=' -f2)
+    if [ "$STAGING_DISK" == "" ]; then STAGING_DISK=0; fi
     STAGING_DISK_GIB=$(echo "$STAGING_DISK" | awk '{printf "%0.2f", $1 / 1024 / 1024 /1024}')
   else
    STAGING_RUNNING=0
   fi
 
   CONTAINER_DISK=$(lxc exec $container -- cat /kinsta/main.conf | grep ^disk_usage_full | cut -d'=' -f2)
+  if [ "$CONTAINER_DISK" == "" ]; then CONTAINER_DISK=0; fi
   CONTAINER_DISK_GIB=$(echo "$CONTAINER_DISK" | awk '{printf "%0.2f", $1 / 1024 / 1024 /1024}')
 
   # 7516192768 bytes = 7 GiB
