@@ -17,3 +17,6 @@ echo ""
 echo "Last live container started:
 $LAST_LIVE_CONTAINER_NAME @ $LAST_LIVE_CONTAINER_TIME UTC"
 echo ""
+echo "Last uptime:"
+grep LXD_META_UP_SINCE /var/log/syslog{.1,} | tail -1 | rev | cut -d' ' -f1-2 | rev
+echo ""
