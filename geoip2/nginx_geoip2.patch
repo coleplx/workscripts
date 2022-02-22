@@ -1,6 +1,6 @@
 diff -Naur nginx_orig/debian/control nginx_geo2/debian/control
---- nginx_orig/debian/control   2022-01-03 02:23:30.000000000 +0000
-+++ nginx_geo2/debian/control   2022-02-22 12:09:38.000591937 +0000
+--- nginx_orig/debian/control	2022-01-03 02:23:30.000000000 +0000
++++ nginx_geo2/debian/control	2022-02-22 12:40:59.863582241 +0000
 @@ -13,6 +13,7 @@
                 libxml2-dev,
                 libgd-dev,
@@ -36,6 +36,7 @@ diff -Naur nginx_orig/debian/control nginx_geo2/debian/control
 @@ -243,6 +247,14 @@
   Those variables include country, region, city, latitude, longitude, postal
   code, etc.
+ 
 +Package: libnginx-mod-http-geoip2
 +Architecture: any
 +Depends: ${misc:Depends}, ${shlibs:Depends}, libmaxminddb0
@@ -48,12 +49,12 @@ diff -Naur nginx_orig/debian/control nginx_geo2/debian/control
  Architecture: any
  Depends: ${misc:Depends}, ${shlibs:Depends}
 diff -Naur nginx_orig/debian/copyright nginx_geo2/debian/copyright
---- nginx_orig/debian/copyright 2020-05-14 03:08:49.000000000 +0000
-+++ nginx_geo2/debian/copyright 2022-02-22 12:10:11.784092675 +0000
+--- nginx_orig/debian/copyright	2020-05-14 03:08:49.000000000 +0000
++++ nginx_geo2/debian/copyright	2022-02-22 12:40:59.863582241 +0000
 @@ -70,6 +70,10 @@
             Igor Sysoev
  License: BSD-2-clause
-
+ 
 +Files: debian/modules/http-geoip2/*
 +Copyright: Copyright (c) 2014, Lee Valentine <lee@leev.net>
 +License: BSD-2-clause
@@ -61,30 +62,52 @@ diff -Naur nginx_orig/debian/copyright nginx_geo2/debian/copyright
  Files: debian/modules/nchan/*
  Copyright: 2009-2016 Leo Ponomarev
  License: MIT
+diff -Naur nginx_orig/debian/libnginx-mod-http-geoip2.nginx nginx_geo2/debian/libnginx-mod-http-geoip2.nginx
+--- nginx_orig/debian/libnginx-mod-http-geoip2.nginx	1970-01-01 00:00:00.000000000 +0000
++++ nginx_geo2/debian/libnginx-mod-http-geoip2.nginx	2022-02-22 12:41:52.277012544 +0000
+@@ -0,0 +1,13 @@
++#!/usr/bin/perl -w
++
++use File::Basename;
++
++# Guess module name
++$module = basename($0, '.nginx');
++$module =~ s/^libnginx-mod-//;
++
++$modulepath = $module;
++$modulepath =~ s/-/_/g;
++
++print "mod debian/build-extras/objs/ngx_${modulepath}_module.so\n";
++print "mod debian/libnginx-mod.conf/mod-${module}.conf\n";
+diff -Naur nginx_orig/debian/libnginx-mod.conf/mod-http-geoip2.conf nginx_geo2/debian/libnginx-mod.conf/mod-http-geoip2.conf
+--- nginx_orig/debian/libnginx-mod.conf/mod-http-geoip2.conf	1970-01-01 00:00:00.000000000 +0000
++++ nginx_geo2/debian/libnginx-mod.conf/mod-http-geoip2.conf	2022-02-22 12:41:24.994185906 +0000
+@@ -0,0 +1 @@
++load_module modules/ngx_http_geoip2_module.so;
 diff -Naur nginx_orig/debian/rules nginx_geo2/debian/rules
---- nginx_orig/debian/rules     2021-05-26 22:47:00.000000000 +0000
-+++ nginx_geo2/debian/rules     2022-02-22 12:08:15.712064976 +0000
+--- nginx_orig/debian/rules	2021-05-26 22:47:00.000000000 +0000
++++ nginx_geo2/debian/rules	2022-02-22 12:40:59.863582241 +0000
 @@ -19,6 +19,7 @@
-        http-redis2 \
-        http-fancyindex \
-        http-geoip \
-+       http-geoip2 \
-        http-headers-more-filter \
-        http-image-filter \
-        http-lua \
+ 	http-redis2 \
+ 	http-fancyindex \
+ 	http-geoip \
++	http-geoip2 \
+ 	http-headers-more-filter \
+ 	http-image-filter \
+ 	http-lua \
 @@ -129,6 +130,7 @@
-                        --with-stream_ssl_preread_module \
-                        --with-mail=dynamic \
-                        --with-mail_ssl_module \
-+                       --add-dynamic-module=$(MODULESDIR)/http-geoip2 \
-                        --add-dynamic-module=$(MODULESDIR)/http-auth-pam \
-                        --add-dynamic-module=$(MODULESDIR)/http-dav-ext \
-                        --add-dynamic-module=$(MODULESDIR)/http-echo \
+ 			--with-stream_ssl_preread_module \
+ 			--with-mail=dynamic \
+ 			--with-mail_ssl_module \
++			--add-dynamic-module=$(MODULESDIR)/http-geoip2 \
+ 			--add-dynamic-module=$(MODULESDIR)/http-auth-pam \
+ 			--add-dynamic-module=$(MODULESDIR)/http-dav-ext \
+ 			--add-dynamic-module=$(MODULESDIR)/http-echo \
 @@ -154,6 +156,7 @@
-                        --with-stream=dynamic \
-                        --with-stream_ssl_module \
-                        --with-stream_ssl_preread_module \
-+                       --add-dynamic-module=$(MODULESDIR)/http-geoip2 \
-                        --add-dynamic-module=$(MODULESDIR)/http-headers-more-filter \
-                        --add-dynamic-module=$(MODULESDIR)/http-auth-ldap \
-                        --add-dynamic-module=$(MODULESDIR)/http-auth-pam \
+ 			--with-stream=dynamic \
+ 			--with-stream_ssl_module \
+ 			--with-stream_ssl_preread_module \
++			--add-dynamic-module=$(MODULESDIR)/http-geoip2 \
+ 			--add-dynamic-module=$(MODULESDIR)/http-headers-more-filter \
+ 			--add-dynamic-module=$(MODULESDIR)/http-auth-ldap \
+ 			--add-dynamic-module=$(MODULESDIR)/http-auth-pam \
