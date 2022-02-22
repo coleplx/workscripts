@@ -1,6 +1,6 @@
-diff -Naur nginx-1.21.5/debian/control nginx-geoip2/debian/control
---- nginx-1.21.5/debian/control 2022-01-03 02:23:30.000000000 +0000
-+++ nginx-geoip2/debian/control 2022-02-21 19:31:27.886827170 +0000
+diff -Naur nginx_orig/debian/control nginx_geo2/debian/control
+--- nginx_orig/debian/control   2022-01-03 02:23:30.000000000 +0000
++++ nginx_geo2/debian/control   2022-02-22 12:09:38.000591937 +0000
 @@ -13,6 +13,7 @@
                 libxml2-dev,
                 libgd-dev,
@@ -9,7 +9,15 @@ diff -Naur nginx-1.21.5/debian/control nginx-geoip2/debian/control
                 libhiredis-dev,
                 liblua5.1-0-dev [!i386 !amd64 !kfreebsd-i386 !armel !armhf !arm64 !powerpc !powerpcspe !mips !mipsel],
                 libluajit-5.1-dev [i386 amd64 kfreebsd-i386 armel armhf arm64 powerpc powerpcspe mips mipsel],
-@@ -111,6 +112,7 @@
+@@ -74,6 +75,7 @@
+ Package: nginx-core
+ Architecture: any
+ Depends: libnginx-mod-http-geoip (= ${binary:Version}),
++         libnginx-mod-http-geoip2 (= ${binary:Version}),
+          libnginx-mod-http-image-filter (= ${binary:Version}),
+          libnginx-mod-http-xslt-filter (= ${binary:Version}),
+          libnginx-mod-mail (= ${binary:Version}),
+@@ -111,6 +113,7 @@
           libnginx-mod-http-dav-ext (= ${binary:Version}),
           libnginx-mod-http-echo (= ${binary:Version}),
           libnginx-mod-http-geoip (= ${binary:Version}),
@@ -17,7 +25,7 @@ diff -Naur nginx-1.21.5/debian/control nginx-geoip2/debian/control
           libnginx-mod-http-image-filter (= ${binary:Version}),
           libnginx-mod-http-subs-filter (= ${binary:Version}),
           libnginx-mod-http-upstream-fair (= ${binary:Version}),
-@@ -186,6 +188,7 @@
+@@ -186,6 +189,7 @@
           libnginx-mod-http-redis2 (= ${binary:Version}),
           libnginx-mod-http-fancyindex (= ${binary:Version}),
           libnginx-mod-http-geoip (= ${binary:Version}),
@@ -25,10 +33,9 @@ diff -Naur nginx-1.21.5/debian/control nginx-geoip2/debian/control
           libnginx-mod-http-headers-more-filter (= ${binary:Version}),
           libnginx-mod-http-image-filter (= ${binary:Version}),
           libnginx-mod-http-lua (= ${binary:Version}),
-@@ -243,6 +246,14 @@
+@@ -243,6 +247,14 @@
   Those variables include country, region, city, latitude, longitude, postal
   code, etc.
-
 +Package: libnginx-mod-http-geoip2
 +Architecture: any
 +Depends: ${misc:Depends}, ${shlibs:Depends}, libmaxminddb0
@@ -40,20 +47,23 @@ diff -Naur nginx-1.21.5/debian/control nginx-geoip2/debian/control
  Package: libnginx-mod-http-image-filter
  Architecture: any
  Depends: ${misc:Depends}, ${shlibs:Depends}
-diff -Naur nginx-1.21.5/debian/copyright nginx-geoip2/debian/copyright
---- nginx-1.21.5/debian/copyright       2020-05-14 03:08:49.000000000 +0000
-+++ nginx-geoip2/debian/copyright       2022-02-21 19:28:45.213976415 +0000
-@@ -206,3 +206,7 @@
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-  IN THE SOFTWARE.
-+
+diff -Naur nginx_orig/debian/copyright nginx_geo2/debian/copyright
+--- nginx_orig/debian/copyright 2020-05-14 03:08:49.000000000 +0000
++++ nginx_geo2/debian/copyright 2022-02-22 12:10:11.784092675 +0000
+@@ -70,6 +70,10 @@
+            Igor Sysoev
+ License: BSD-2-clause
+
 +Files: debian/modules/http-geoip2/*
 +Copyright: Copyright (c) 2014, Lee Valentine <lee@leev.net>
 +License: BSD-2-clause
-diff -Naur nginx-1.21.5/debian/rules nginx-geoip2/debian/rules
---- nginx-1.21.5/debian/rules   2021-05-26 22:47:00.000000000 +0000
-+++ nginx-geoip2/debian/rules   2022-02-21 19:32:01.506309702 +0000
++
+ Files: debian/modules/nchan/*
+ Copyright: 2009-2016 Leo Ponomarev
+ License: MIT
+diff -Naur nginx_orig/debian/rules nginx_geo2/debian/rules
+--- nginx_orig/debian/rules     2021-05-26 22:47:00.000000000 +0000
++++ nginx_geo2/debian/rules     2022-02-22 12:08:15.712064976 +0000
 @@ -19,6 +19,7 @@
         http-redis2 \
         http-fancyindex \
@@ -62,23 +72,19 @@ diff -Naur nginx-1.21.5/debian/rules nginx-geoip2/debian/rules
         http-headers-more-filter \
         http-image-filter \
         http-lua \
-@@ -133,7 +134,8 @@
+@@ -129,6 +130,7 @@
+                        --with-stream_ssl_preread_module \
+                        --with-mail=dynamic \
+                        --with-mail_ssl_module \
++                       --add-dynamic-module=$(MODULESDIR)/http-geoip2 \
+                        --add-dynamic-module=$(MODULESDIR)/http-auth-pam \
                         --add-dynamic-module=$(MODULESDIR)/http-dav-ext \
                         --add-dynamic-module=$(MODULESDIR)/http-echo \
-                        --add-dynamic-module=$(MODULESDIR)/http-upstream-fair \
--                       --add-dynamic-module=$(MODULESDIR)/http-subs-filter
-+                       --add-dynamic-module=$(MODULESDIR)/http-subs-filter \
-+                       --add-dynamic-module=$(MODULESDIR)/http-geoip2
-
- extras_configure_flags := \
-                        $(common_configure_flags) \
-@@ -171,7 +173,8 @@
-                        --add-dynamic-module=$(MODULESDIR)/http-uploadprogress \
-                        --add-dynamic-module=$(MODULESDIR)/http-upstream-fair \
-                        --add-dynamic-module=$(MODULESDIR)/http-subs-filter \
--                       --add-dynamic-module=$(MODULESDIR)/http-vhost-traffic-status
-+                       --add-dynamic-module=$(MODULESDIR)/http-vhost-traffic-status \
-+                       --add-dynamic-module=$(MODULESDIR)/http-geoip2
-
- %:
-        dh $@ --without autoreconf
+@@ -154,6 +156,7 @@
+                        --with-stream=dynamic \
+                        --with-stream_ssl_module \
+                        --with-stream_ssl_preread_module \
++                       --add-dynamic-module=$(MODULESDIR)/http-geoip2 \
+                        --add-dynamic-module=$(MODULESDIR)/http-headers-more-filter \
+                        --add-dynamic-module=$(MODULESDIR)/http-auth-ldap \
+                        --add-dynamic-module=$(MODULESDIR)/http-auth-pam \
