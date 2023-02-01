@@ -38,7 +38,7 @@ ki-cache-api: MISS
 Fetch: Always HIT
 Cache API: 1 MISS in 20 requests
 ```
-root@lb2-site-ams:~# for i in {1..20}; do curl -sILX GET https://iowatest.kinsta.cloud/wp-content/uploads/2022/12/41043f36-83b4-33e8-a9cd-99e16c9aa250.jpg | grep -Ei '^cf-cache-status|cf-ray|ki-cache-api'; sleep 1; done
+root@centos:~# for i in {1..20}; do curl -sILX GET https://iowatest.kinsta.cloud/wp-content/uploads/2022/12/41043f36-83b4-33e8-a9cd-99e16c9aa250.jpg | grep -Ei '^cf-cache-status|cf-ray|ki-cache-api'; sleep 1; done
 cf-ray: 792b88123f8fb500-OSL
 cf-cache-status: HIT
 ki-cache-api: MISS
