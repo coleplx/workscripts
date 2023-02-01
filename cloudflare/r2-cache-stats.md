@@ -1,18 +1,18 @@
-**Bucket:** bucket-example1.kinsta.page
-**Bucket region:** Probably SA ~ Brazil
+**Bucket:** bucket-example1.kinsta.page  
+**Bucket region:** Probably SA ~ Brazil  
 
-Requests were executed one after the other, never at the same time.
-I never purged the cache after each test.
+Requests were executed one after the other, never at the same time.  
+I never purged the cache after each test.  
 
-DCs tested: LHR, IAD, ORD, EWR, SEA, GRU, OSL, DME, HEL, TLV
+DCs tested: LHR, IAD, ORD, EWR, SEA, GRU, OSL, DME, HEL, TLV  
 
-Awesome cache hit ratio performance: OSL, DME, HEL, TLV
-Good performance: SEA
-"Bad" performance: GRU, EWR, LHR, IAD, ORD
+Awesome cache hit ratio performance: OSL, DME, HEL, TLV  
+Good performance: SEA  
+"Bad" performance: GRU, EWR, LHR, IAD, ORD  
 
 
-**1 - Brazil (GRU)**
-5 MISS/EXPIRED in 20 requests
+**1 - Brazil (GRU)**  
+5 MISS/EXPIRED in 20 requests  
 ```
 [coleplx@fedora cloudflare_worker_page]$ for i in {1..20}; do curl -sILX GET https://bucket-example1.kinsta.page/demo-application-b44zl/image.jpg | grep -Ei '^cf-cache-status|cf-ray'; sleep 1; done
 CF-Cache-Status: EXPIRED
@@ -29,10 +29,10 @@ CF-Cache-Status: EXPIRED
 CF-RAY: 792b1b845b5b1b17-GRU
 CF-Cache-Status: HIT
 ```
-(...) Following requests all returned HIT
+(...) Following requests all returned HIT  
 
-**2 - Norway**
-1 MISS in 20 requests
+**2 - Norway**  
+1 MISS in 20 requests  
 ```
 root@centos:~# for i in {1..20}; do curl -sILX GET https://bucket-example1.kinsta.page/demo-application-b44zl/image.jpg | grep -Ei '^cf-cache-status|cf-ray'; sleep 1; done
 CF-Cache-Status: MISS
@@ -42,8 +42,8 @@ CF-RAY: 792b1cedbc3ab52d-OSL
 ```
 (...) Following requests all returned HIT
 
-**3 - Germany**
-2 MISS in 20 requests (2 DCs served the request)
+**3 - Germany**  
+2 MISS in 20 requests (2 DCs served the request)  
 ```
 [cole@centos-2gb-hel1-1 .ssh]$ for i in {1..20}; do curl -sILX GET https://bucket-example1.kinsta.page/demo-application-b44zl/image.jpg | grep -Ei '^cf-cache-status|cf-ray'; sleep 1; done
 CF-Cache-Status: MISS
@@ -55,8 +55,8 @@ CF-RAY: 792b2904d9d1d96f-HEL
 CF-Cache-Status: HIT
 ```
 
-**4 - Israel**
-1 MISS in 20 requests
+**4 - Israel**  
+1 MISS in 20 requests  
 ```
 [coleplx@fedora cloudflare]$ for i in {1..20}; do curl -sILX GET https://bucket-example1.kinsta.page/demo-application-b44zl/image.jpg | grep -Ei '^cf-cache-status|cf-ray'; sleep 1; done
 CF-Cache-Status: MISS
@@ -65,9 +65,9 @@ CF-Cache-Status: HIT
 CF-RAY: 792b2d43c9c4e3cf-TLV
 ```
 
-**5 - TOP DCS**
-**EWR**
-4 MISS in 20 requests
+**5 - TOP DCS**  
+**EWR**  
+4 MISS in 20 requests  
 ```
 [coleplx@fedora cloudflare]$ for i in {1..20}; do curl -sILX GET https://bucket-example1.kinsta.page/demo-application-b44zl/image.jpg | grep -Ei '^cf-cache-status|cf-ray'; sleep 1; done
 CF-Cache-Status: MISS
@@ -94,8 +94,8 @@ CF-Cache-Status: MISS
 CF-RAY: 792b53fa6ea31778-EWR
 ```
 
-**LHR**
-5 MISS/EXPIRED in 20 requests
+**LHR**  
+5 MISS/EXPIRED in 20 requests  
 ```
 [coleplx@fedora cloudflare]$ for i in {1..20}; do curl -sILX GET https://bucket-example1.kinsta.page/demo-application-b44zl/image.jpg | grep -Ei '^cf-cache-status|cf-ray'; sleep 1; done
 CF-Cache-Status: MISS
@@ -119,8 +119,8 @@ CF-RAY: 792b5c02fd37dcd7-LHR
 CF-Cache-Status: HIT
 ```
 
-**IAD**
-7 MISS/EXPIRED in 20 requests
+**IAD**  
+7 MISS/EXPIRED in 20 requests  
 ```
 [coleplx@fedora cloudflare]$ for i in {1..20}; do curl -sILX GET https://bucket-example1.kinsta.page/demo-application-b44zl/image.jpg | grep -Ei '^cf-cache-status|cf-ray'; sleep 1; done
 CF-Cache-Status: MISS
@@ -159,8 +159,8 @@ CF-Cache-Status: HIT
 CF-RAY: 792b6989a90c2430-IAD
 ```
 
-**ORD**
-5 MISS/EXPIRED in 20 requests
+**ORD**  
+5 MISS/EXPIRED in 20 requests  
 ```
 [coleplx@fedora cloudflare]$ for i in {1..20}; do curl -sILX GET https://bucket-example1.kinsta.page/demo-application-b44zl/image.jpg | grep -Ei '^cf-cache-status|cf-ray'; sleep 1; done
 CF-Cache-Status: MISS
@@ -176,8 +176,8 @@ CF-RAY: 792b6b9b6e2f2a45-ORD
 CF-Cache-Status: HIT
 ```
 
-**SEA**
-2 MISS/EXPIRED in 20 requests
+**SEA**  
+2 MISS/EXPIRED in 20 requests  
 ```
 [coleplx@fedora cloudflare]$ for i in {1..20}; do curl -sILX GET https://bucket-example1.kinsta.page/demo-application-b44zl/image.jpg | grep -Ei '^cf-cache-status|cf-ray'; sleep 1; done
 CF-Cache-Status: MISS
