@@ -4,12 +4,6 @@
 Requests were executed one after the other, never at the same time.  
 I never purged the cache after each test.  
 
-DCs tested: LHR, IAD, ORD, EWR, SEA, GRU, OSL, DME, HEL, TLV  
-
-Awesome cache hit ratio performance: OSL, DME, HEL, TLV  
-Good performance: SEA  
-"Bad" performance: GRU, EWR, LHR, IAD, ORD  
-
 
 **1 - Brazil (GRU)**  
 Fetch: 1 MISS in 20 requests  
