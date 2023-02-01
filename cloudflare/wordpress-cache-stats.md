@@ -1,16 +1,16 @@
-**Site:** iowatest.kinsta.cloud
-**Site region:** Iowa - uscentral
+**Site:** iowatest.kinsta.cloud  
+**Site region:** Iowa - uscentral  
 
-Requests were executed one after the other, never at the same time.
-Smart Tiered Caching Topology is enabled.
-I never purged the cache after each test.
+Requests were executed one after the other, never at the same time.  
+Smart Tiered Caching Topology is enabled.  
+I never purged the cache after each test.  
 
-We are using Fetch and Cache API at the same time.
-We first cache the asset using Fetch and a lower TTL (600s), and then we cache it locally with Cache API.
-If there is a `cache.match` in the Cache API, we return it immediately and eventually the asset cached by Fetch expires.
-To better understand where the asset is coming from, we will check two headers: `cf-cache-status` and `ki-cache-api`.
+We are using Fetch and Cache API at the same time.  
+We first cache the asset using Fetch and a lower TTL (600s), and then we cache it locally with Cache API.  
+If there is a `cache.match` in the Cache API, we return it immediately and eventually the asset cached by Fetch expires.  
+To better understand where the asset is coming from, we will check two headers: `cf-cache-status` and `ki-cache-api`.  
 
-DCs tested: LHR, IAD, ORD, EWR, SEA, GRU, OSL, DME, HEL, TLV
+DCs tested: LHR, IAD, ORD, EWR, SEA, GRU, OSL, DME, HEL, TLV  
 
 **1 - Brazil**  
 Fetch: 1 MISS in 20 requests  
